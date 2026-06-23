@@ -51,12 +51,14 @@ jobs:
             --test-path data/test.csv \
             --validate-path data/validate.csv \
             --output model_status.json \
+            --history model_history.json \
             --minimum-score 0.80
 
       - name: Render model status HTML
         run: |
           uv run python scripts/render_model_status.py \
             --input model_status.json \
+            --history model_history.json \
             --output-dir site
 
       - name: Upload model status JSON
