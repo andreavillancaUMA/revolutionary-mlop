@@ -29,17 +29,17 @@ jobs:
       - name: Set up Python
         run: uv python install 3.14
 
-      - name: Install dependencies
-        run: uv sync --all-groups
+      - name: Install project dependencies
+        run: uv sync --dev
 
       - name: Ruff lint
-        run: uv run ruff check --output-format=github .
+        run: uvx ruff check --output-format=github .
 
       - name: Ruff format check
-        run: uv run ruff format --check .
+        run: uvx ruff format --check .
 
       - name: Ty type check
-        run: uv run ty check src scripts
+        run: uvx ty check src scripts
 
       - name: Run unit tests
         run: uv run pytest
