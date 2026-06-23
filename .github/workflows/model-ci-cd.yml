@@ -1,1 +1,92 @@
+name: Model CI/CD
 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: model-ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-and-model-gates:
+    name: Quality checks, tests, train, and validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Ruff lint
+        run: uv run ruff check --output-format=github .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Ty type check
+        run: uv run ty check .
+
+      - name: Run unit tests
+        run: uv run pytest
+
+      - name: Train new model and validate production metrics
+        run: |
+          uv run python scripts/train_and_validate.py \
+            --train-path data/train.csv \
+            --test-path data/test.csv \
+            --validate-path data/validate.csv \
+            --output model_status.json \
+            --minimum-score 0.80
+
+      - name: Render model status HTML
+        run: |
+          uv run python scripts/render_model_status.py \
+            --input model_status.json \
+            --output-dir site
+
+      - name: Upload model status JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-status-json
+          path: model_status.json
+
+      - name: Upload GitHub Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy-pages:
+    name: Deploy model status to GitHub Pages
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: quality-and-model-gates
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+``
