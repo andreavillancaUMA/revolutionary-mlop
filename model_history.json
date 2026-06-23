@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "generated_at": "2026-06-23T17:35:18.206921+00:00",
+    "model_id": "MODEL_1.0",
+    "minimum_score": 0.8,
+    "validation_metrics": {
+      "total": 100,
+      "tp": 100,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "accepted": true,
+    "github": {
+      "run_id": "28044815402",
+      "run_number": "24",
+      "sha": "12010e88714c42a0a287a613a83146b457ca556d",
+      "ref": "refs/heads/main"
+    }
+  }
+]
